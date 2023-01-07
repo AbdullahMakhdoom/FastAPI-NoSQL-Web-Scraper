@@ -1,0 +1,5 @@
+app/ignored/
+env/
+__pycache__/
+.env
+secrets/
