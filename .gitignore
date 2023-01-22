@@ -3,4 +3,4 @@ env/
 __pycache__/
 .env
 secrets/
-noteboks/.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/*
