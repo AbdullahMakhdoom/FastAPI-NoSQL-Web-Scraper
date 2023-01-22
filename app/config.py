@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     db_client_secret: str = Field(..., env='ASTRA_DB_CLIENT_SECRET')
     db_keyspace: str = Field(..., env='ASTRA_DB_KEYSPACE')
     connect_bundle_path: str = Field(..., env='ASTRA_DB_CONNECT_PATH')
-
+    redis_url: str = Field(..., env='REDIS_URL')
     class Config:
         env_file = ".env"
 
