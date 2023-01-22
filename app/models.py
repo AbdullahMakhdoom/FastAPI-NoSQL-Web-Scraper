@@ -2,10 +2,10 @@ from cassandra.cqlengine import columns
 from cassandra.cqlengine.models import Model
 
 import os
-from dotenv import load_dotenv
+from . import config
 
-load_dotenv()
-astra_db_keyspace = os.environ.get("ASTRA_DB_KEYSPACE")
+settings = config.Settings()
+astra_db_keyspace = settings.db_keyspace
 
 # List view -> Detail view
 class Product(Model):

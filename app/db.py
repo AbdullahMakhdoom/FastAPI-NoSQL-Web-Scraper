@@ -1,27 +1,20 @@
 import os
 import json
 
-from dotenv import load_dotenv
-
 from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cqlengine.connection import register_connection, set_default_connection
 
-load_dotenv()
+from . import config
 
-ASTRA_DB_SECRETS_JSON = os.environ.get("ASTRA_DB_SECRETS_PATH")
-json_file = open(ASTRA_DB_SECRETS_JSON)
-astra_db_credentials = json.load(json_file)
-
-
-CLUSTER_BUNDLE = os.environ.get("ASTRA_DB_CONNECT_PATH")
+settings = config.get_settings()
 
 def get_cluster():
     cloud_config = {
-        'secure_connect_bundle': CLUSTER_BUNDLE
+        'secure_connect_bundle': settings.connect_bundle_path
     }
 
-    auth_provider = PlainTextAuthProvider(astra_db_credentials["clientId"], astra_db_credentials["secret"])
+    auth_provider = PlainTextAuthProvider(settings.db_client_id, settings.db_client_secret)
     cluster = Cluster(cloud=cloud_config, auth_provider=auth_provider)
 
     return cluster
