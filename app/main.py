@@ -2,7 +2,7 @@ from typing import List
 from fastapi import FastAPI
 
 from cassandra.cqlengine.management import sync_table
-from . import db, models, schema, config
+from . import db, models, schema, config, crud
 
 settings = config.get_settings()
 Product = models.Product
@@ -31,7 +31,11 @@ def products_detail_view(asin):
 def products_scrapes_list_view(asin):
     return list(ProductScrapeEvent.objects().filter(asin=asin))
 
-
+@app.post("/events/scrape")
+def events_scrape_create_view(data: schema.ProductListSchema):
+    product, _ = crud.add_scrape_event(data.dict())
+    return product
+    
 session = None
 @app.on_event("startup")
 def on_startup():
