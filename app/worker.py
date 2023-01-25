@@ -29,6 +29,13 @@ ProductScrapeEvent = models.ProductScrapeEvent
 beat_init.connect()
 worker_process_init.connect(celery_on_startup)
 
+@celery_app.on_after_configure.connect
+def setup_periodic_tasks(sender, *args, **kwargs):
+    sender.add_periodic_taks(
+        crontab(minute="*/5"),
+        scrape_products.s()
+    )
+
 @celery_app.task
 def random_task(name):
     print(f"Who throws shows {name}")
@@ -39,3 +46,14 @@ def list_products():
     q = Products.objects().all().values_list("asin", flat=True)
     print(list(q))
 
+
+@celery_app.task
+def scrape_asin(asin):
+    print(asin)
+
+@celery_app.task
+def scrape_product():
+    print("To do scraping")
+    q = Products.object().all().value_list("asin", flat=True)
+    for asin in q:
+        scrape_asin.delay(asin)
