@@ -1,8 +1,12 @@
 from celery import Celery
+from celery.schedules import crontab
 from celery.signals import beat_init, worker_process_init
-from . import config, db, models
+
+
 from cassandra.cqlengine import connection
 from cassandra.cqlengine.management import sync_table
+
+from . import config, crud, db, models, scraper, schema
 
 settings = config.get_settings()
 REDIS_URL = settings.redis_url
@@ -37,11 +41,6 @@ def setup_periodic_tasks(sender, *args, **kwargs):
     )
 
 @celery_app.task
-def random_task(name):
-    print(f"Who throws shows {name}")
-
-
-@celery_app.task
 def list_products():
     q = Products.objects().all().values_list("asin", flat=True)
     print(list(q))
@@ -49,11 +48,24 @@ def list_products():
 
 @celery_app.task
 def scrape_asin(asin):
-    print(asin)
+    s = scraper.Scraper(asin=asin, endless_scroll=True)
+    dataset = s.scrape()
+    try:
+        validated_data = schema.ProductListSchema(**dataset)
+    except:
+        valdiated_data = None
+    if validated_data is not None:
+        product, _ = crud.add_scrape_event(validated_data.dict())
+        return asin, True
+    return asin, False
+
+
 
 @celery_app.task
-def scrape_product():
+def scrape_products():
     print("To do scraping")
     q = Products.object().all().value_list("asin", flat=True)
     for asin in q:
         scrape_asin.delay(asin)
+
+
